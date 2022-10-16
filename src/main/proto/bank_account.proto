@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.example.grpc.bank.service;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+service BankAccountService {
+  rpc createBankAccount (CreateBankAccountRequest) returns (CreateBankAccountResponse);
+}
+
+message CreateBankAccountRequest {
+  string name = 1;
+  string email = 2;
+  string currency = 3;
+  double balance = 4;
+}
+
+message CreateBankAccountResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string currency = 4;
+  double balance = 5;
+}
