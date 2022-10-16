@@ -4,6 +4,7 @@ import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.of
 import com.example.alexbryksin.exceptions.BankAccountNotFoundException
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
+import com.example.alexbryksin.mappers.BankAccountMapper
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
 import net.devh.boot.grpc.server.service.GrpcService
@@ -28,25 +29,19 @@ class BankAccountGrpcService : BankAccountServiceGrpcKt.BankAccountServiceCorout
     }
 
     override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse {
-        val bankAccountData = BankAccountData.newBuilder()
-            .setId(UUID.randomUUID().toString())
-            .setEmail(request.email)
-            .setBalance(request.balance)
-            .setName(request.name)
-            .setCurrency(request.currency)
-            .build()
-
-        val bankAccount = BankAccount.of(bankAccountData.id, bankAccountData)
+        val bankAccountData =  BankAccountMapper.bankAccountDataFromCreateRequest(request)
+        val bankAccount = BankAccount.of(UUID.randomUUID().toString(), bankAccountData)
 
         repository[bankAccount.id] = bankAccount
         log.info("created bank account: $bankAccount")
         log.info("repository: $repository")
-        return CreateBankAccountResponse.newBuilder().setBankAccount(bankAccountData).build()
+        return CreateBankAccountResponse.newBuilder().setBankAccount(bankAccount.toProto()).build()
     }
 
     override suspend fun getBankAccountById(request: GetBankAccountByIdRequest): GetBankAccountByIdResponse {
         val bankAccount = repository[request.id] ?: throw BankAccountNotFoundException(request.id)
         return GetBankAccountByIdResponse.newBuilder().setBankAccount(bankAccount.toProto()).build()
+            .also { log.info("get bank account by id: $bankAccount") }
     }
 
     companion object {
