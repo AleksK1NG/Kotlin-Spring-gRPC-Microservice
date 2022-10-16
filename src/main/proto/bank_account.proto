@@ -8,9 +8,10 @@ import "google/protobuf/timestamp.proto";
 service BankAccountService {
   rpc createBankAccount (CreateBankAccountRequest) returns (CreateBankAccountResponse);
   rpc getBankAccountById (GetBankAccountByIdRequest) returns (GetBankAccountByIdResponse);
+  rpc depositBalance (DepositBalanceRequest) returns (DepositBalanceResponse);
 }
 
-message BankAccount {
+message BankAccountData {
   string id = 1;
   string name = 2;
   string email = 3;
@@ -26,7 +27,7 @@ message CreateBankAccountRequest {
 }
 
 message CreateBankAccountResponse {
-  BankAccount bankAccount = 1;
+  BankAccountData bankAccount = 1;
 }
 
 message GetBankAccountByIdRequest {
@@ -34,5 +35,14 @@ message GetBankAccountByIdRequest {
 }
 
 message GetBankAccountByIdResponse {
-  BankAccount bankAccount = 1;
+  BankAccountData bankAccount = 1;
+}
+
+message DepositBalanceRequest {
+  string id = 1;
+  double balance = 2;
+}
+
+message DepositBalanceResponse {
+  BankAccountData bankAccount = 1;
 }
