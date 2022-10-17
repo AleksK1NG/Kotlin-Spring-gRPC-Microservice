@@ -9,21 +9,30 @@ service BankAccountService {
   rpc createBankAccount (CreateBankAccountRequest) returns (CreateBankAccountResponse);
   rpc getBankAccountById (GetBankAccountByIdRequest) returns (GetBankAccountByIdResponse);
   rpc depositBalance (DepositBalanceRequest) returns (DepositBalanceResponse);
+  rpc withdrawBalance (WithdrawBalanceRequest) returns (WithdrawBalanceResponse);
 }
 
 message BankAccountData {
   string id = 1;
-  string name = 2;
-  string email = 3;
-  string currency = 4;
-  double balance = 5;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  string address = 5;
+  string currency = 6;
+  string phone = 7;
+  double balance = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
 }
 
 message CreateBankAccountRequest {
-  string name = 1;
-  string email = 2;
-  string currency = 3;
-  double balance = 4;
+  string email = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string address = 4;
+  string currency = 5;
+  string phone = 6;
+  double balance = 7;
 }
 
 message CreateBankAccountResponse {
@@ -44,5 +53,14 @@ message DepositBalanceRequest {
 }
 
 message DepositBalanceResponse {
+  BankAccountData bankAccount = 1;
+}
+
+message WithdrawBalanceRequest {
+  string id = 1;
+  double balance = 2;
+}
+
+message WithdrawBalanceResponse {
   BankAccountData bankAccount = 1;
 }

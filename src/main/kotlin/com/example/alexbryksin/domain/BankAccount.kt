@@ -1,14 +1,25 @@
 package com.example.alexbryksin.domain
 
-import com.example.grpc.bank.service.BankAccount.BankAccountData
+import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Column
+import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.util.*
 
+
+@Table(schema = "microservices", name = "bank_accounts")
 data class BankAccount(
-    var id: String = "",
-    var email: String = "",
-    var name: String = "",
-    var currency: String = "",
-    var balance: BigDecimal = BigDecimal.ZERO
+    @Column("bank_account_id") @Id var id: UUID?,
+    @Column("email") var email: String = "",
+    @Column("first_name") var firstName: String = "",
+    @Column("last_name") var lastName: String = "",
+    @Column("address") var address: String = "",
+    @Column("phone") var phone: String = "",
+    @Column("currency") var currency: Currency = Currency.USD,
+    @Column("balance") var balance: BigDecimal = BigDecimal.ZERO,
+    @Column("created_at") var createdAt: LocalDateTime? = null,
+    @Column("updated_at") var updatedAt: LocalDateTime? = null,
 ) {
     companion object
 
@@ -16,34 +27,10 @@ data class BankAccount(
         balance = balance.plus(amount)
     }
 
-    fun toProto(): BankAccountData {
-        return BankAccountData.newBuilder()
-            .setId(this.id)
-            .setEmail(this.email)
-            .setName(this.name)
-            .setCurrency(this.currency)
-            .setBalance(this.balance.toDouble())
-            .build()
+    fun withdrawAmount(amount: BigDecimal) {
+        balance = balance.minus(amount)
     }
-}
 
-fun BankAccount.Companion.of(bankAccountData: BankAccountData): BankAccount {
-    return BankAccount(
-        id = "",
-        email = bankAccountData.email,
-        name = bankAccountData.name,
-        currency = bankAccountData.currency,
-        balance = BigDecimal.valueOf(bankAccountData.balance)
-    )
-}
-
-fun BankAccount.Companion.of(id: String, bankAccountData: BankAccountData): BankAccount {
-    return BankAccount(
-        id = id,
-        email = bankAccountData.email,
-        name = bankAccountData.name,
-        currency = bankAccountData.currency,
-        balance = BigDecimal.valueOf(bankAccountData.balance)
-    )
+    fun fullName(): String = "$firstName $lastName"
 }
 
