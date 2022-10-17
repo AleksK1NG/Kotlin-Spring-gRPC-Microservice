@@ -1,47 +1,49 @@
 package com.example.alexbryksin.delivery.grpc
 
-import com.example.alexbryksin.domain.BankAccount
-import com.example.alexbryksin.domain.of
-import com.example.alexbryksin.exceptions.BankAccountNotFoundException
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
 import com.example.alexbryksin.mappers.BankAccountMapper
+import com.example.alexbryksin.service.BankAccountService
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
 import net.devh.boot.grpc.server.service.GrpcService
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 
 @GrpcService(interceptors = [LogGrpcInterceptor::class])
-class BankAccountGrpcService : BankAccountServiceGrpcKt.BankAccountServiceCoroutineImplBase() {
-
-    private val repository = ConcurrentHashMap<String, BankAccount>()
-
-
-    override suspend fun depositBalance(request: DepositBalanceRequest): DepositBalanceResponse {
-        val bankAccount = repository[request.id] ?: throw BankAccountNotFoundException(request.id)
-        bankAccount.depositAmount(BigDecimal.valueOf(request.balance))
-        repository[bankAccount.id] = bankAccount
-        return DepositBalanceResponse.newBuilder().setBankAccount(bankAccount.toProto()).build()
-            .also { log.info("deposited balance for account: $bankAccount") }
-    }
+class BankAccountGrpcService(private val bankAccountService: BankAccountService) :
+    BankAccountServiceGrpcKt.BankAccountServiceCoroutineImplBase() {
 
     override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse {
-        val bankAccountData =  BankAccountMapper.bankAccountDataFromCreateRequest(request)
-        val bankAccount = BankAccount.of(UUID.randomUUID().toString(), bankAccountData)
-
-        repository[bankAccount.id] = bankAccount
-        log.info("created bank account: $bankAccount")
-        log.info("repository: $repository")
-        return CreateBankAccountResponse.newBuilder().setBankAccount(bankAccount.toProto()).build()
+        val bankAccount = BankAccountMapper.bankAccountFromCreateBankAccountGrpcRequest(request)
+        val createdBankAccount = bankAccountService.createBankAccount(bankAccount)
+            .also { log.info("created bank account: $it") }
+        return CreateBankAccountResponse.newBuilder()
+            .setBankAccount(BankAccountMapper.bankAccountToProto(createdBankAccount))
+            .build()
     }
 
     override suspend fun getBankAccountById(request: GetBankAccountByIdRequest): GetBankAccountByIdResponse {
-        val bankAccount = repository[request.id] ?: throw BankAccountNotFoundException(request.id)
-        return GetBankAccountByIdResponse.newBuilder().setBankAccount(bankAccount.toProto()).build()
-            .also { log.info("get bank account by id: $bankAccount") }
+        val bankAccount = bankAccountService.getBankAccountById(UUID.fromString(request.id))
+        log.info("found bank account: $bankAccount")
+        return GetBankAccountByIdResponse.newBuilder().setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
+            .build()
+    }
+
+    override suspend fun depositBalance(request: DepositBalanceRequest): DepositBalanceResponse {
+        val bankAccount =
+            bankAccountService.depositAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
+        return DepositBalanceResponse.newBuilder()
+            .setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
+            .build()
+    }
+
+    override suspend fun withdrawBalance(request: WithdrawBalanceRequest): WithdrawBalanceResponse {
+        val bankAccount =
+            bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
+        return WithdrawBalanceResponse.newBuilder().setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
+            .build()
     }
 
     companion object {
