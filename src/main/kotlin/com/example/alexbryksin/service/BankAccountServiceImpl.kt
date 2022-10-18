@@ -4,8 +4,10 @@ import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.exceptions.BankAccountNotFoundException
 import com.example.alexbryksin.repositories.BankRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -40,6 +42,15 @@ class BankAccountServiceImpl(val bankRepository: BankRepository) : BankAccountSe
     override suspend fun withdrawAmount(id: UUID, amount: BigDecimal): BankAccount = withContext(Dispatchers.IO) {
         val bankAccount = bankRepository.findById(id) ?: throw BankAccountNotFoundException(id.toString())
         bankRepository.save(bankAccount.withdrawAmount(amount)).also { log.info("withdrawAmount bank account: $it") }
+    }
+
+    override fun findAllByBalanceBetween(min: BigDecimal, max: BigDecimal, pageable: Pageable): Flow<BankAccount> {
+        try {
+            return bankRepository.findAllByBalanceBetween(min, max, pageable)
+        } catch (ex: Exception) {
+            log.error("error", ex)
+            throw ex
+        }
     }
 
     companion object {
