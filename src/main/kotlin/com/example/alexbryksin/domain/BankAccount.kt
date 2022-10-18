@@ -1,5 +1,6 @@
 package com.example.alexbryksin.domain
 
+import com.example.alexbryksin.exceptions.InvalidAmountException
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -23,14 +24,20 @@ data class BankAccount(
 ) {
     companion object
 
-    fun depositAmount(amount: BigDecimal) {
-        balance = balance.plus(amount)
+    fun depositAmount(amount: BigDecimal): BankAccount {
+        if (amount < BigDecimal.ZERO) throw InvalidAmountException(amount.toString())
+        return this.apply {
+            balance = balance.plus(amount)
+            updatedAt = LocalDateTime.now()
+        }
     }
 
-    fun withdrawAmount(amount: BigDecimal) {
-        balance = balance.minus(amount)
+    fun withdrawAmount(amount: BigDecimal): BankAccount {
+        if (balance.minus(amount) < BigDecimal.ZERO) throw InvalidAmountException(amount.toString())
+        return this.apply {
+            balance = balance.minus(amount)
+            updatedAt = LocalDateTime.now()
+        }
     }
-
-    fun fullName(): String = "$firstName $lastName"
 }
 

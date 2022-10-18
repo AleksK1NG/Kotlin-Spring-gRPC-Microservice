@@ -27,21 +27,19 @@ class BankAccountServiceImpl(val bankRepository: BankRepository) : BankAccountSe
 
     @Transactional(readOnly = true)
     override suspend fun getBankAccountById(id: UUID): BankAccount = withContext(Dispatchers.IO) {
-        bankRepository.findById(id)?: throw BankAccountNotFoundException(id.toString())
+        bankRepository.findById(id) ?: throw BankAccountNotFoundException(id.toString())
     }
 
     @Transactional
     override suspend fun depositAmount(id: UUID, amount: BigDecimal): BankAccount = withContext(Dispatchers.IO) {
         val bankAccount = bankRepository.findById(id) ?: throw BankAccountNotFoundException(id.toString())
-        bankAccount.depositAmount(amount)
-        bankRepository.save(bankAccount).also { log.info("depositAmount bank account: $it") }
+        bankRepository.save(bankAccount.depositAmount(amount)).also { log.info("depositAmount bank account: $it") }
     }
 
     @Transactional
     override suspend fun withdrawAmount(id: UUID, amount: BigDecimal): BankAccount = withContext(Dispatchers.IO) {
         val bankAccount = bankRepository.findById(id) ?: throw BankAccountNotFoundException(id.toString())
-        bankAccount.withdrawAmount(amount)
-        bankRepository.save(bankAccount).also { log.info("withdrawAmount bank account: $it") }
+        bankRepository.save(bankAccount.withdrawAmount(amount)).also { log.info("withdrawAmount bank account: $it") }
     }
 
     companion object {
