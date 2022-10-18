@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -51,6 +52,14 @@ class BankAccountServiceImpl(val bankRepository: BankRepository) : BankAccountSe
             log.error("error", ex)
             throw ex
         }
+    }
+
+    override suspend fun findByBalanceAmount(
+        min: BigDecimal,
+        max: BigDecimal,
+        pageable: Pageable
+    ): PageImpl<BankAccount> = withContext(Dispatchers.IO) {
+        bankRepository.findByBalanceAmount(min, max, pageable)
     }
 
     companion object {

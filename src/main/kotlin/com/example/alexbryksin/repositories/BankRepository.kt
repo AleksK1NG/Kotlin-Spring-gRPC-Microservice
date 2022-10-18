@@ -7,7 +7,7 @@ import org.springframework.data.repository.kotlin.CoroutineSortingRepository
 import java.math.BigDecimal
 import java.util.*
 
-interface BankRepository : CoroutineSortingRepository<BankAccount, UUID> {
+interface BankRepository : CoroutineSortingRepository<BankAccount, UUID>, BankPostgresRepository {
 
     suspend fun findByEmail(email: String): BankAccount?
 

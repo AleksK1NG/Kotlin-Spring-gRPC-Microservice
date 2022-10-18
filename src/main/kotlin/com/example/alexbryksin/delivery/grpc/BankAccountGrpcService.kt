@@ -59,6 +59,31 @@ class BankAccountGrpcService(private val bankAccountService: BankAccountService)
         }
     }
 
+    override suspend fun getAllByBalanceWithPagination(request: GetAllByBalanceWithPaginationRequest): GetAllByBalanceWithPaginationResponse =
+        withTimeout(timeOutMillis) {
+            try {
+                bankAccountService.findByBalanceAmount(
+                    request.min.toBigDecimal(),
+                    request.max.toBigDecimal(),
+                    PageRequest.of(request.page, request.size)
+                ).let { it ->
+                    GetAllByBalanceWithPaginationResponse
+                        .newBuilder()
+                        .setIsFirst(it.isFirst)
+                        .setIsLast(it.isLast)
+                        .setTotalElements(it.totalElements.toInt())
+                        .setTotalPages(it.totalPages)
+                        .setPage(it.pageable.pageNumber)
+                        .setSize(it.pageable.pageSize)
+                        .addAllBankAccount(it.content.map { it.toProto() })
+                        .build()
+                }
+            } catch (ex: Exception) {
+                log.error("error", ex)
+                throw ex
+            }
+        }
+
     companion object {
         private val log = LoggerFactory.getLogger(BankAccountGrpcService::class.java)
         private const val timeOutMillis = 5000L
