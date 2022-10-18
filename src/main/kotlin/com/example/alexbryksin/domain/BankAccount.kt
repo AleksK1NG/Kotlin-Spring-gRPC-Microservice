@@ -1,6 +1,7 @@
 package com.example.alexbryksin.domain
 
 import com.example.alexbryksin.exceptions.InvalidAmountException
+import com.example.grpc.bank.service.BankAccount.BankAccountData
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -41,3 +42,17 @@ data class BankAccount(
     }
 }
 
+fun BankAccount.toProto(): BankAccountData {
+    return BankAccountData.newBuilder()
+        .setId(this.id.toString())
+        .setEmail(this.email)
+        .setFirstName(this.firstName)
+        .setLastName(this.lastName)
+        .setAddress(this.address)
+        .setPhone(this.phone)
+        .setBalance(this.balance.toDouble())
+        .setCurrency(this.currency.name)
+        .setUpdatedAt(this.updatedAt.toString())
+        .setCreatedAt(this.createdAt.toString())
+        .build()
+}
