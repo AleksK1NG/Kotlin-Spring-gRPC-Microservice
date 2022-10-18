@@ -5,8 +5,11 @@ import com.example.alexbryksin.mappers.BankAccountMapper
 import com.example.alexbryksin.service.BankAccountService
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import net.devh.boot.grpc.server.service.GrpcService
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
 import java.math.BigDecimal
 import java.util.*
 
@@ -44,6 +47,21 @@ class BankAccountGrpcService(private val bankAccountService: BankAccountService)
             bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
         return WithdrawBalanceResponse.newBuilder().setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
             .build()
+    }
+
+    override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
+        val pageRequest = PageRequest.of(request.page, request.size)
+
+        return bankAccountService.findAllByBalanceBetween(
+            request.min.toBigDecimal(),
+            request.max.toBigDecimal(),
+            pageRequest
+        ).map {
+            GetAllByBalanceResponse
+                .newBuilder()
+                .setBankAccount(BankAccountMapper.bankAccountToProto(it))
+                .build()
+        }
     }
 
     companion object {

@@ -10,6 +10,7 @@ service BankAccountService {
   rpc getBankAccountById (GetBankAccountByIdRequest) returns (GetBankAccountByIdResponse);
   rpc depositBalance (DepositBalanceRequest) returns (DepositBalanceResponse);
   rpc withdrawBalance (WithdrawBalanceRequest) returns (WithdrawBalanceResponse);
+  rpc getAllByBalance (GetAllByBalanceRequest) returns (stream GetAllByBalanceResponse);
 }
 
 message BankAccountData {
@@ -62,5 +63,16 @@ message WithdrawBalanceRequest {
 }
 
 message WithdrawBalanceResponse {
+  BankAccountData bankAccount = 1;
+}
+
+message GetAllByBalanceRequest {
+  double min = 1;
+  double max = 2;
+  int32 page = 3;
+  int32 size = 4;
+}
+
+message GetAllByBalanceResponse {
   BankAccountData bankAccount = 1;
 }
