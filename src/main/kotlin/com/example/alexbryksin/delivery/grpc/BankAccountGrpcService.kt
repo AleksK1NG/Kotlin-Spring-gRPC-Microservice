@@ -1,5 +1,6 @@
 package com.example.alexbryksin.delivery.grpc
 
+import com.example.alexbryksin.domain.toProto
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
 import com.example.alexbryksin.mappers.BankAccountMapper
 import com.example.alexbryksin.service.BankAccountService
@@ -7,6 +8,7 @@ import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeout
 import net.devh.boot.grpc.server.service.GrpcService
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -18,53 +20,47 @@ import java.util.*
 class BankAccountGrpcService(private val bankAccountService: BankAccountService) :
     BankAccountServiceGrpcKt.BankAccountServiceCoroutineImplBase() {
 
-    override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse {
-        val bankAccount = BankAccountMapper.bankAccountFromCreateBankAccountGrpcRequest(request)
-        val createdBankAccount = bankAccountService.createBankAccount(bankAccount)
-            .also { log.info("created bank account: $it") }
-        return CreateBankAccountResponse.newBuilder()
-            .setBankAccount(BankAccountMapper.bankAccountToProto(createdBankAccount))
-            .build()
-    }
+    override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse =
+        withTimeout(timeOutMillis) {
+            bankAccountService.createBankAccount(BankAccountMapper.bankAccountFromCreateBankAccountGrpcRequest(request))
+                .let { CreateBankAccountResponse.newBuilder().setBankAccount(it.toProto()).build() }
+                .also { log.info("created bank account: $it") }
+        }
 
-    override suspend fun getBankAccountById(request: GetBankAccountByIdRequest): GetBankAccountByIdResponse {
-        val bankAccount = bankAccountService.getBankAccountById(UUID.fromString(request.id))
-        log.info("found bank account: $bankAccount")
-        return GetBankAccountByIdResponse.newBuilder().setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
-            .build()
-    }
+    override suspend fun getBankAccountById(request: GetBankAccountByIdRequest): GetBankAccountByIdResponse =
+        withTimeout(timeOutMillis) {
+            bankAccountService.getBankAccountById(UUID.fromString(request.id))
+                .let { GetBankAccountByIdResponse.newBuilder().setBankAccount(it.toProto()).build() }
+                .also { log.info("found bank account: $it") }
+        }
 
-    override suspend fun depositBalance(request: DepositBalanceRequest): DepositBalanceResponse {
-        val bankAccount =
+    override suspend fun depositBalance(request: DepositBalanceRequest): DepositBalanceResponse =
+        withTimeout(timeOutMillis) {
             bankAccountService.depositAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
-        return DepositBalanceResponse.newBuilder()
-            .setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
-            .build()
-    }
+                .let { DepositBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+        }
 
-    override suspend fun withdrawBalance(request: WithdrawBalanceRequest): WithdrawBalanceResponse {
-        val bankAccount =
+    override suspend fun withdrawBalance(request: WithdrawBalanceRequest): WithdrawBalanceResponse =
+        withTimeout(timeOutMillis) {
             bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
-        return WithdrawBalanceResponse.newBuilder().setBankAccount(BankAccountMapper.bankAccountToProto(bankAccount))
-            .build()
-    }
+                .let { WithdrawBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+        }
 
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
-        val pageRequest = PageRequest.of(request.page, request.size)
-
         return bankAccountService.findAllByBalanceBetween(
             request.min.toBigDecimal(),
             request.max.toBigDecimal(),
-            pageRequest
+            PageRequest.of(request.page, request.size)
         ).map {
             GetAllByBalanceResponse
                 .newBuilder()
-                .setBankAccount(BankAccountMapper.bankAccountToProto(it))
+                .setBankAccount(it.toProto())
                 .build()
         }
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(BankAccountGrpcService::class.java)
+        private const val timeOutMillis = 5000L
     }
 }
