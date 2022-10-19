@@ -14,5 +14,6 @@ interface BankRepository : CoroutineSortingRepository<BankAccount, UUID>, BankPo
 
     suspend fun findByEmail(email: String): BankAccount?
 
+
     fun findAllByBalanceBetween(min: BigDecimal, max: BigDecimal, pageable: Pageable): Flow<BankAccount>
 }
