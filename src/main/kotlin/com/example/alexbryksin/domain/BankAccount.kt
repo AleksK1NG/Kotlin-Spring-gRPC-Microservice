@@ -1,5 +1,7 @@
 package com.example.alexbryksin.domain
 
+import com.example.alexbryksin.dto.CreateBankAccountDto
+import com.example.alexbryksin.dto.SuccessBankAccountResponse
 import com.example.alexbryksin.exceptions.InvalidAmountException
 import com.example.grpc.bank.service.BankAccount.BankAccountData
 import org.springframework.data.annotation.Id
@@ -60,6 +62,21 @@ fun BankAccount.toProto(): BankAccountData {
         .build()
 }
 
+fun BankAccount.toSuccessHttpResponse(): SuccessBankAccountResponse {
+    return SuccessBankAccountResponse(
+        id = this.id,
+        email = this.email,
+        firstName = this.firstName,
+        lastName = this.lastName,
+        address = this.address,
+        phone = this.phone,
+        currency =  this.currency,
+        balance = this.balance,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt,
+    )
+}
+
 fun BankAccount.Companion.of(request: com.example.grpc.bank.service.BankAccount.CreateBankAccountRequest): BankAccount {
     return BankAccount(
         id = null,
@@ -70,6 +87,21 @@ fun BankAccount.Companion.of(request: com.example.grpc.bank.service.BankAccount.
         phone = request.phone,
         currency = Currency.valueOf(request.currency),
         balance = BigDecimal.valueOf(request.balance),
+        updatedAt = LocalDateTime.now(),
+        createdAt = LocalDateTime.now(),
+    )
+}
+
+fun BankAccount.Companion.of(request: CreateBankAccountDto): BankAccount {
+    return BankAccount(
+        id = null,
+        email = request.email,
+        firstName = request.firstName,
+        lastName = request.lastName,
+        address = request.address,
+        phone = request.phone,
+        currency = request.currency,
+        balance = request.balance,
         updatedAt = LocalDateTime.now(),
         createdAt = LocalDateTime.now(),
     )

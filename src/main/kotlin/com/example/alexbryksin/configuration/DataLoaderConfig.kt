@@ -2,7 +2,7 @@ package com.example.alexbryksin.configuration
 
 import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.Currency
-import com.example.alexbryksin.service.BankAccountService
+import com.example.alexbryksin.services.BankAccountService
 import com.github.javafaker.Faker
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking

@@ -4,7 +4,7 @@ import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.of
 import com.example.alexbryksin.domain.toProto
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
-import com.example.alexbryksin.service.BankAccountService
+import com.example.alexbryksin.services.BankAccountService
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
 import kotlinx.coroutines.flow.Flow
