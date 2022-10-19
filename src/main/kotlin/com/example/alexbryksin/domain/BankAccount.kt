@@ -56,3 +56,18 @@ fun BankAccount.toProto(): BankAccountData {
         .setCreatedAt(this.createdAt.toString())
         .build()
 }
+
+fun BankAccount.Companion.of(request: com.example.grpc.bank.service.BankAccount.CreateBankAccountRequest): BankAccount {
+    return BankAccount(
+        id = null,
+        email = request.email,
+        firstName = request.firstName,
+        lastName = request.lastName,
+        address = request.address,
+        phone = request.phone,
+        currency = Currency.valueOf(request.currency),
+        balance = BigDecimal.valueOf(request.balance),
+        updatedAt = LocalDateTime.now(),
+        createdAt = LocalDateTime.now(),
+    )
+}
