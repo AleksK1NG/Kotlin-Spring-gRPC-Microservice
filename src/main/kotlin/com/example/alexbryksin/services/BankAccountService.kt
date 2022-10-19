@@ -1,4 +1,4 @@
-package com.example.alexbryksin.service
+package com.example.alexbryksin.services
 
 import com.example.alexbryksin.domain.BankAccount
 import kotlinx.coroutines.flow.Flow
