@@ -38,12 +38,14 @@ class BankAccountGrpcService(private val bankAccountService: BankAccountService)
         withTimeout(timeOutMillis) {
             bankAccountService.depositAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
                 .let { DepositBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+                .also { log.info("response: $it") }
         }
 
     override suspend fun withdrawBalance(request: WithdrawBalanceRequest): WithdrawBalanceResponse =
         withTimeout(timeOutMillis) {
             bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
                 .let { WithdrawBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+                .also { log.info("response: $it") }
         }
 
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
@@ -61,26 +63,21 @@ class BankAccountGrpcService(private val bankAccountService: BankAccountService)
 
     override suspend fun getAllByBalanceWithPagination(request: GetAllByBalanceWithPaginationRequest): GetAllByBalanceWithPaginationResponse =
         withTimeout(timeOutMillis) {
-            try {
-                bankAccountService.findByBalanceAmount(
-                    request.min.toBigDecimal(),
-                    request.max.toBigDecimal(),
-                    PageRequest.of(request.page, request.size)
-                ).let { it ->
-                    GetAllByBalanceWithPaginationResponse
-                        .newBuilder()
-                        .setIsFirst(it.isFirst)
-                        .setIsLast(it.isLast)
-                        .setTotalElements(it.totalElements.toInt())
-                        .setTotalPages(it.totalPages)
-                        .setPage(it.pageable.pageNumber)
-                        .setSize(it.pageable.pageSize)
-                        .addAllBankAccount(it.content.map { it.toProto() })
-                        .build()
-                }
-            } catch (ex: Exception) {
-                log.error("error", ex)
-                throw ex
+            bankAccountService.findByBalanceAmount(
+                request.min.toBigDecimal(),
+                request.max.toBigDecimal(),
+                PageRequest.of(request.page, request.size)
+            ).let { it ->
+                GetAllByBalanceWithPaginationResponse
+                    .newBuilder()
+                    .setIsFirst(it.isFirst)
+                    .setIsLast(it.isLast)
+                    .setTotalElements(it.totalElements.toInt())
+                    .setTotalPages(it.totalPages)
+                    .setPage(it.pageable.pageNumber)
+                    .setSize(it.pageable.pageSize)
+                    .addAllBankAccount(it.content.map { it.toProto() })
+                    .build()
             }
         }
 
