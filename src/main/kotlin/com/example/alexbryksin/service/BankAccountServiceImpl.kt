@@ -17,7 +17,6 @@ import java.util.*
 @Service
 class BankAccountServiceImpl(val bankRepository: BankRepository) : BankAccountService {
 
-
     @Transactional
     override suspend fun createBankAccount(bankAccount: BankAccount): BankAccount = withContext(Dispatchers.IO) {
         try {
@@ -46,12 +45,7 @@ class BankAccountServiceImpl(val bankRepository: BankRepository) : BankAccountSe
     }
 
     override fun findAllByBalanceBetween(min: BigDecimal, max: BigDecimal, pageable: Pageable): Flow<BankAccount> {
-        try {
-            return bankRepository.findAllByBalanceBetween(min, max, pageable)
-        } catch (ex: Exception) {
-            log.error("error", ex)
-            throw ex
-        }
+        return bankRepository.findAllByBalanceBetween(min, max, pageable)
     }
 
     override suspend fun findByBalanceAmount(
