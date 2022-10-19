@@ -8,18 +8,21 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
+import javax.validation.constraints.DecimalMin
+import javax.validation.constraints.Email
+import javax.validation.constraints.Size
 
 
 @Table(schema = "microservices", name = "bank_accounts")
 data class BankAccount(
     @Column("bank_account_id") @Id var id: UUID?,
-    @Column("email") var email: String = "",
-    @Column("first_name") var firstName: String = "",
-    @Column("last_name") var lastName: String = "",
-    @Column("address") var address: String = "",
-    @Column("phone") var phone: String = "",
+    @get:Email @Column("email") var email: String = "",
+    @get:Size(min = 3, max = 60) @Column("first_name") var firstName: String = "",
+    @get:Size(min = 3, max = 60) @Column("last_name") var lastName: String = "",
+    @get:Size(min = 3, max = 500) @Column("address") var address: String = "",
+    @get:Size(min = 6, max = 20) @Column("phone") var phone: String = "",
     @Column("currency") var currency: Currency = Currency.USD,
-    @Column("balance") var balance: BigDecimal = BigDecimal.ZERO,
+    @get:DecimalMin(value = "0.0") @Column("balance") var balance: BigDecimal = BigDecimal.ZERO,
     @Column("created_at") var createdAt: LocalDateTime? = null,
     @Column("updated_at") var updatedAt: LocalDateTime? = null,
 ) {

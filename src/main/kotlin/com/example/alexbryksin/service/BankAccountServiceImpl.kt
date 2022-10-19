@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.*
+import javax.validation.Valid
 
 @Service
 class BankAccountServiceImpl(
@@ -23,7 +24,7 @@ class BankAccountServiceImpl(
 ) : BankAccountService {
 
     @Transactional
-    override suspend fun createBankAccount(bankAccount: BankAccount): BankAccount =
+    override suspend fun createBankAccount(@Valid bankAccount: BankAccount): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
             val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.createBankAccount")
 
