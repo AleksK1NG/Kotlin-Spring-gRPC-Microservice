@@ -12,6 +12,6 @@ data class CreateBankAccountDto(
     @get:Size(min = 3, max = 60) val lastName: String,
     @get:Size(min = 3, max = 500) val address: String,
     @get:Size(min = 6, max = 20) val phone: String,
-    var currency: Currency = Currency.USD,
+    var currency: Currency,
     @get:DecimalMin(value = "0.0") val balance: BigDecimal,
 )

@@ -10,7 +10,7 @@ import org.springframework.context.event.EventListener
 class GrpcServerConfig {
     @EventListener
     fun onServerStarted(event: GrpcServerStartedEvent) {
-        log.info("gRPC Server started,services: ${event.server.services[0].methods.toString()}")
+        log.info("gRPC Server started, services: ${event.server.services[0].methods}")
     }
 
     companion object {

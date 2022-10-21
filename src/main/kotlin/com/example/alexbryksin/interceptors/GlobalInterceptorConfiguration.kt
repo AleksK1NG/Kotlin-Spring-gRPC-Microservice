@@ -8,7 +8,5 @@ import org.springframework.context.annotation.Configuration
 class GlobalInterceptorConfiguration {
 
     @GrpcGlobalServerInterceptor
-    fun logServerInterceptor(): LogGrpcInterceptor? {
-        return LogGrpcInterceptor()
-    }
+    fun logServerInterceptor(): LogGrpcInterceptor? = LogGrpcInterceptor()
 }

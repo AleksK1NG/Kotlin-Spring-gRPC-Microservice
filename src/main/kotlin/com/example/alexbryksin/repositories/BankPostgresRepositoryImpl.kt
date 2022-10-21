@@ -1,6 +1,7 @@
 package com.example.alexbryksin.repositories
 
 import com.example.alexbryksin.domain.BankAccount
+import com.example.alexbryksin.domain.BankAccount.Companion.BALANCE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.buffer
@@ -31,7 +32,7 @@ class BankPostgresRepositoryImpl(
         pageable: Pageable
     ): PageImpl<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
         val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankPostgresRepository.findByBalanceAmount")
-        val query = Query.query(Criteria.where("balance").between(min, max))
+        val query = Query.query(Criteria.where(BALANCE).between(min, max))
 
         try {
             val accountsList = async {
