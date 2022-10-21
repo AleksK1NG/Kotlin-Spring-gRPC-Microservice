@@ -1,6 +1,5 @@
 package com.example.alexbryksin.interceptors
 
-import com.example.alexbryksin.delivery.grpc.BankAccountGrpcService
 import io.grpc.Metadata
 import io.grpc.ServerCall
 import io.grpc.ServerCallHandler
@@ -19,6 +18,6 @@ class LogGrpcInterceptor : ServerInterceptor {
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(BankAccountGrpcService::class.java)
+        private val log = LoggerFactory.getLogger(LogGrpcInterceptor::class.java)
     }
 }

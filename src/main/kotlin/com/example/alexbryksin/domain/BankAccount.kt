@@ -17,18 +17,17 @@ import javax.validation.constraints.Size
 
 @Table(schema = "microservices", name = "bank_accounts")
 data class BankAccount(
-    @Column("bank_account_id") @Id var id: UUID?,
-    @get:Email @Column("email") var email: String = "",
-    @get:Size(min = 3, max = 60) @Column("first_name") var firstName: String = "",
-    @get:Size(min = 3, max = 60) @Column("last_name") var lastName: String = "",
-    @get:Size(min = 3, max = 500) @Column("address") var address: String = "",
-    @get:Size(min = 6, max = 20) @Column("phone") var phone: String = "",
-    @Column("currency") var currency: Currency = Currency.USD,
-    @get:DecimalMin(value = "0.0") @Column("balance") var balance: BigDecimal = BigDecimal.ZERO,
-    @Column("created_at") var createdAt: LocalDateTime? = null,
-    @Column("updated_at") var updatedAt: LocalDateTime? = null,
+    @Column(BANK_ACCOUNT_ID) @Id var id: UUID?,
+    @get:Email @Column(EMAIL) var email: String = "",
+    @get:Size(min = 3, max = 60) @Column(FIRST_NAME) var firstName: String = "",
+    @get:Size(min = 3, max = 60) @Column(LAST_NAME) var lastName: String = "",
+    @get:Size(min = 3, max = 500) @Column(ADDRESS) var address: String = "",
+    @get:Size(min = 6, max = 20) @Column(PHONE) var phone: String = "",
+    @Column(CURRENCY) var currency: Currency = Currency.USD,
+    @get:DecimalMin(value = "0.0") @Column(BALANCE) var balance: BigDecimal = BigDecimal.ZERO,
+    @Column(CREATED_AT) var createdAt: LocalDateTime? = null,
+    @Column(UPDATED_AT) var updatedAt: LocalDateTime? = null,
 ) {
-    companion object
 
     fun depositAmount(amount: BigDecimal): BankAccount {
         if (amount < BigDecimal.ZERO) throw InvalidAmountException(amount.toString())
@@ -44,6 +43,19 @@ data class BankAccount(
             balance = balance.minus(amount)
             updatedAt = LocalDateTime.now()
         }
+    }
+
+    companion object {
+        const val BANK_ACCOUNT_ID = "bank_account_id"
+        const val EMAIL = "email"
+        const val FIRST_NAME = "first_name"
+        const val LAST_NAME = "last_name"
+        const val ADDRESS = "address"
+        const val PHONE = "phone"
+        const val BALANCE = "balance"
+        const val CURRENCY = "currency"
+        const val CREATED_AT = "created_at"
+        const val UPDATED_AT = "updated_at"
     }
 }
 
@@ -70,7 +82,7 @@ fun BankAccount.toSuccessHttpResponse(): SuccessBankAccountResponse {
         lastName = this.lastName,
         address = this.address,
         phone = this.phone,
-        currency =  this.currency,
+        currency = this.currency,
         balance = this.balance,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
