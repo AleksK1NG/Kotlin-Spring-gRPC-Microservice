@@ -1,6 +1,7 @@
 package com.example.alexbryksin.services
 
 import com.example.alexbryksin.domain.BankAccount
+import com.example.alexbryksin.dto.FindByBalanceRequestDto
 import com.example.alexbryksin.exceptions.BankAccountNotFoundException
 import com.example.alexbryksin.repositories.BankRepository
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -29,7 +29,8 @@ class BankAccountServiceImpl(
             val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.createBankAccount")
 
             try {
-                bankRepository.save(bankAccount).also { span.tag("saved bank account", it.toString()) }
+                bankRepository.save(bankAccount)
+                    .also { span.tag("saved bank account", it.toString()) }
             } finally {
                 span.end()
             }
@@ -79,25 +80,21 @@ class BankAccountServiceImpl(
             }
         }
 
-    override fun findAllByBalanceBetween(min: BigDecimal, max: BigDecimal, pageable: Pageable): Flow<BankAccount> {
+    override fun findAllByBalanceBetween(requestDto: FindByBalanceRequestDto): Flow<BankAccount> {
         val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.findAllByBalanceBetween")
 
         try {
-            return bankRepository.findAllByBalanceBetween(min, max, pageable)
+            return bankRepository.findAllByBalanceBetween(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
         } finally {
             span.end()
         }
     }
 
-    override suspend fun findByBalanceAmount(
-        min: BigDecimal,
-        max: BigDecimal,
-        pageable: Pageable
-    ): PageImpl<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
+    override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): PageImpl<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
         val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.findByBalanceAmount")
 
         try {
-            bankRepository.findByBalanceAmount(min, max, pageable)
+            bankRepository.findByBalanceAmount(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
                 .also { span.tag("pagination", it.toString()) }
         } finally {
             span.end()

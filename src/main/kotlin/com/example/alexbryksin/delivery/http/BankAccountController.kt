@@ -3,10 +3,7 @@ package com.example.alexbryksin.delivery.http
 import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.of
 import com.example.alexbryksin.domain.toSuccessHttpResponse
-import com.example.alexbryksin.dto.CreateBankAccountDto
-import com.example.alexbryksin.dto.DepositBalanceDto
-import com.example.alexbryksin.dto.SuccessBankAccountResponse
-import com.example.alexbryksin.dto.WithdrawBalanceDto
+import com.example.alexbryksin.dto.*
 import com.example.alexbryksin.services.BankAccountService
 import io.swagger.v3.oas.annotations.Operation
 import kotlinx.coroutines.flow.Flow
@@ -76,7 +73,7 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
         @RequestParam(name = "page", defaultValue = "0") page: Int,
         @RequestParam(name = "size", defaultValue = "10") size: Int,
     ) = withTimeout(timeOutMillis) {
-        ResponseEntity.ok(bankAccountService.findByBalanceAmount(min, max, PageRequest.of(page, size)))
+        ResponseEntity.ok(bankAccountService.findByBalanceAmount(FindByBalanceRequestDto(min, max, PageRequest.of(page, size))))
             .also { log.info("response: $it") }
     }
 
@@ -92,7 +89,7 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
         @RequestParam(name = "page", defaultValue = "0") page: Int,
         @RequestParam(name = "size", defaultValue = "10") size: Int,
     ): Flow<SuccessBankAccountResponse> {
-        return bankAccountService.findAllByBalanceBetween(min, max, PageRequest.of(page, size))
+        return bankAccountService.findAllByBalanceBetween(FindByBalanceRequestDto(min, max, PageRequest.of(page, size)))
             .map { it -> it.toSuccessHttpResponse().also { log.info("response: $it") } }
     }
 

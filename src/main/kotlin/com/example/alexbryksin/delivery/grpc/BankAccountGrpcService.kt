@@ -3,6 +3,8 @@ package com.example.alexbryksin.delivery.grpc
 import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.of
 import com.example.alexbryksin.domain.toProto
+import com.example.alexbryksin.dto.FindByBalanceRequestDto
+import com.example.alexbryksin.dto.of
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
 import com.example.alexbryksin.services.BankAccountService
 import com.example.grpc.bank.service.BankAccount.*
@@ -16,7 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import java.math.BigDecimal
 import java.util.*
 import javax.validation.ConstraintViolationException
@@ -97,12 +98,10 @@ class BankAccountGrpcService(
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
         val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalance")
 
+
         try {
-            return bankAccountService.findAllByBalanceBetween(
-                request.min.toBigDecimal(),
-                request.max.toBigDecimal(),
-                PageRequest.of(request.page, request.size)
-            ).map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+            return bankAccountService.findAllByBalanceBetween(validate(FindByBalanceRequestDto.of(request)))
+                .map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
         } finally {
             span.end()
         }
@@ -114,12 +113,7 @@ class BankAccountGrpcService(
                 val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalanceWithPagination")
 
                 try {
-                    bankAccountService.findByBalanceAmount(
-                        request.min.toBigDecimal(),
-                        request.max.toBigDecimal(),
-                        PageRequest.of(request.page, request.size)
-                    )
-                        .let { it.toGetAllByBalanceWithPaginationResponse() }
+                    bankAccountService.findByBalanceAmount(validate(FindByBalanceRequestDto.of(request))).toGetAllByBalanceWithPaginationResponse()
                         .also { log.info("response: $it") }.also { span.tag("response", it.toString()) }
                 } finally {
                     span.end()
