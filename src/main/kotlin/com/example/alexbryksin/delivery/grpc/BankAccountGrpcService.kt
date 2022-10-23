@@ -29,8 +29,7 @@ class BankAccountGrpcService(
     private val bankAccountService: BankAccountService,
     private val tracer: Tracer,
     private val validator: Validator
-) :
-    BankAccountServiceGrpcKt.BankAccountServiceCoroutineImplBase() {
+) : BankAccountServiceGrpcKt.BankAccountServiceCoroutineImplBase() {
 
 
     override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse =
@@ -124,9 +123,11 @@ class BankAccountGrpcService(
 
 
     private fun <T> validate(data: T): T {
-        val errors = validator.validate(data)
-        if (errors.isNotEmpty()) throw ConstraintViolationException(errors).also { log.error("validation error: ${it.localizedMessage}") }
-        return data
+        return data.run {
+            val errors = validator.validate(data)
+            if (errors.isNotEmpty()) throw ConstraintViolationException(errors).also { log.error("validation error: ${it.localizedMessage}") }
+            data
+        }
     }
 
 

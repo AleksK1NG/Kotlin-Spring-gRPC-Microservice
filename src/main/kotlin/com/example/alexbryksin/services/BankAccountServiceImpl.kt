@@ -7,7 +7,6 @@ import com.example.alexbryksin.repositories.BankRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
 import org.springframework.data.domain.PageImpl
@@ -29,14 +28,12 @@ class BankAccountServiceImpl(
             val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.createBankAccount")
 
             try {
-                bankRepository.save(bankAccount)
-                    .also { span.tag("saved bank account", it.toString()) }
+                bankRepository.save(bankAccount).also { span.tag("saved account", it.toString()) }
             } finally {
                 span.end()
             }
         }
 
-    @Transactional(readOnly = true)
     override suspend fun getBankAccountById(id: UUID): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
             val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.getBankAccountById")
@@ -74,7 +71,6 @@ class BankAccountServiceImpl(
                     ?.let { bankRepository.save(it.withdrawAmount(amount)) }
                     .also { span.tag("bank account", it.toString()) }
                     ?: throw BankAccountNotFoundException(id.toString())
-
             } finally {
                 span.end()
             }
@@ -99,9 +95,5 @@ class BankAccountServiceImpl(
         } finally {
             span.end()
         }
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(BankAccountServiceImpl::class.java)
     }
 }
