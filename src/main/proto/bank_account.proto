@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package com.example.grpc.bank.service;
 
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
+//import "google/protobuf/wrappers.proto";
+//import "google/protobuf/timestamp.proto";
 
 service BankAccountService {
   rpc createBankAccount (CreateBankAccountRequest) returns (CreateBankAccountResponse);

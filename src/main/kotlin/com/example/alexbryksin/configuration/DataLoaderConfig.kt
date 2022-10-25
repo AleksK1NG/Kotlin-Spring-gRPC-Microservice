@@ -27,9 +27,9 @@ class DataLoaderConfig(
 
     override fun run(vararg args: String?) = runBlocking {
 
-        try {
-            (0..count).map { _ ->
-                async {
+        (0..count).map { _ ->
+            async {
+                try {
                     bankAccountService.createBankAccount(
                         BankAccount(
                             id = null,
@@ -44,12 +44,14 @@ class DataLoaderConfig(
                             updatedAt = LocalDateTime.now()
                         )
                     )
+                } catch (ex: Exception) {
+                    log.error("insert mock data error", ex)
+                    return@async null
                 }
-            }.map { it.await() }.forEach { log.info("created bank account: $it") }
-            log.info("Mock data successfully inserted")
-        } catch (ex: Exception) {
-            log.error("insert mock data error", ex)
-        }
+            }
+        }.map { it.await() }.forEach { log.info("created bank account: $it") }
+
+        log.info("Mock data successfully inserted")
     }
 
     companion object {

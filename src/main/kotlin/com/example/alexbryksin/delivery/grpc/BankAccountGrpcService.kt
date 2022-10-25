@@ -97,7 +97,6 @@ class BankAccountGrpcService(
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
         val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalance")
 
-
         try {
             return bankAccountService.findAllByBalanceBetween(validate(FindByBalanceRequestDto.of(request)))
                 .map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
