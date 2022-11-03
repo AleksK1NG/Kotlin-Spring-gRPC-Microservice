@@ -1,4 +1,4 @@
-### Kotlin Spring WebFlux gRPC microservice 👋✨💫
+### Kotlin, Spring WebFlux, gRPC microservice 👋✨💫
 
 #### 👨‍💻 Full list what has been used:
 [Spring](https://spring.io/) Spring web framework <br/>
@@ -7,7 +7,7 @@
 [gRPC-Spring-Boot-Starter](https://yidongnan.github.io/grpc-spring-boot-starter/en/) gRPC Spring Boot Starter <br/>
 [Spring Data R2DBC](https://spring.io/projects/spring-data-r2dbc) a specification to integrate SQL databases using reactive drivers <br/>
 [Zipkin](https://zipkin.io/) open source, end-to-end distributed [tracing](https://opentracing.io/) <br/>
-[Spring Cloud Sleuth](https://docs.spring.io/spring-cloud-sleuth/docs/current-SNAPSHOT/reference/html/index.html) auto-configuration for distributed tracing <br/>
+[Spring Cloud Sleuth](https://docs.spring.io/spring-cloud-sleuth/docs/current-SNAPSHOT/reference/html/index.html) autoconfiguration for distributed tracing <br/>
 [Prometheus](https://prometheus.io/) monitoring and alerting <br/>
 [Grafana](https://grafana.com/) for to compose observability dashboards with everything from Prometheus <br/>
 [Kubernetes](https://kubernetes.io/) automating deployment, scaling, and management of containerized applications <br/>

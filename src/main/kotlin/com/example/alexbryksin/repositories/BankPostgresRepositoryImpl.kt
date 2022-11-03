@@ -42,8 +42,6 @@ class BankPostgresRepositoryImpl(
                     .asFlow()
                     .toList()
             }
-//            val totalCount = async { template.select(query, BankAccount::class.java).count().awaitFirst() }
-
 
             val totalCount = async {
                 databaseClient.sql("SELECT count(bank_account_id) as total FROM microservices.bank_accounts WHERE balance BETWEEN :min AND :max")
@@ -63,6 +61,6 @@ class BankPostgresRepositoryImpl(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(BankPostgresRepository::class.java)
+        private val log = LoggerFactory.getLogger(BankPostgresRepositoryImpl::class.java)
     }
 }
