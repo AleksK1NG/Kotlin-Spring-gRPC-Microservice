@@ -6,12 +6,14 @@ import com.example.alexbryksin.domain.toSuccessHttpResponse
 import com.example.alexbryksin.dto.*
 import com.example.alexbryksin.services.BankAccountService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
@@ -19,12 +21,18 @@ import java.util.*
 import javax.validation.Valid
 
 
+@Tag(name = "BankAccount", description = "Bank Account REST Controller")
 @RestController
 @RequestMapping(path = ["/api/v1/bank"])
 class BankAccountController(private val bankAccountService: BankAccountService) {
 
-    @PostMapping
-    @Operation(method = "createBankAccount", summary = "create bew bank account", operationId = "createBankAccount")
+    @PostMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        method = "createBankAccount",
+        summary = "Create bew bank account",
+        operationId = "createBankAccount",
+        description = "Create new bank for account for user"
+    )
     suspend fun createBankAccount(@Valid @RequestBody req: CreateBankAccountDto) =
         withTimeout(timeOutMillis) {
             ResponseEntity
@@ -33,8 +41,13 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
                 .also { log.info("created bank account: $it") }
         }
 
-    @PutMapping(path = ["/deposit/{id}"])
-    @Operation(method = "depositBalance", summary = "deposit balance", operationId = "depositBalance")
+    @PutMapping(path = ["/deposit/{id}"], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        method = "depositBalance",
+        summary = "Deposit balance",
+        operationId = "depositBalance",
+        description = "Deposit given amount to the bank account balance"
+    )
     suspend fun depositBalance(
         @PathVariable("id") id: UUID,
         @Valid @RequestBody depositBalanceDto: DepositBalanceDto
@@ -43,8 +56,13 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
             .also { log.info("response: $it") }
     }
 
-    @PutMapping(path = ["/withdraw/{id}"])
-    @Operation(method = "withdrawBalance", summary = "withdraw balance", operationId = "withdrawBalance")
+    @PutMapping(path = ["/withdraw/{id}"], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        method = "withdrawBalance",
+        summary = "Withdraw balance",
+        operationId = "withdrawBalance",
+        description = "Withdraw given amount from the bank account balance"
+    )
     suspend fun withdrawBalance(
         @PathVariable("id") id: UUID,
         @Valid @RequestBody withdrawBalanceDto: WithdrawBalanceDto
@@ -53,19 +71,25 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
             .also { log.info("response: $it") }
     }
 
-    @GetMapping(path = ["{id}"])
-    @Operation(method = "getBankAccountById", summary = "get bank account by id", operationId = "getBankAccountById")
+    @GetMapping(path = ["{id}"], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(
+        method = "getBankAccountById",
+        summary = "Get bank account by id",
+        operationId = "getBankAccountById",
+        description = "Get user bank account by given id"
+    )
     suspend fun getBankAccountById(@PathVariable(required = true) id: UUID) = withTimeout(timeOutMillis) {
         ResponseEntity.ok(bankAccountService.getBankAccountById(id).toSuccessHttpResponse())
             .also { log.info("success get bank account: $it") }
     }
 
 
-    @GetMapping(path = ["all/balance"])
+    @GetMapping(path = ["all/balance"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
         method = "findAllAccountsByBalance",
-        summary = "find all bank account with given amount range",
-        operationId = "findAllAccounts"
+        summary = "Find all bank account with given amount range",
+        operationId = "findAllAccounts",
+        description = "Find all bank accounts for the given balance range with pagination"
     )
     suspend fun findAllAccountsByBalance(
         @RequestParam(name = "min", defaultValue = "0") min: BigDecimal,
@@ -80,8 +104,9 @@ class BankAccountController(private val bankAccountService: BankAccountService) 
     @GetMapping(path = ["all/balance/stream"])
     @Operation(
         method = "getAllByBalanceStream",
-        summary = "find all bank account with given amount range returns stream",
-        operationId = "getAllByBalanceStream"
+        summary = "Find all bank account with given amount range returns stream",
+        operationId = "getAllByBalanceStream",
+        description = "Find all bank accounts for the given balance range"
     )
     fun getAllByBalanceStream(
         @RequestParam(name = "min", defaultValue = "0") min: BigDecimal,
