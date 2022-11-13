@@ -1,7 +1,7 @@
 ### Kotlin, Spring WebFlux, gRPC microservice 👋✨💫
 
 #### 👨‍💻 Full list what has been used:
-[Spring](https://spring.io/) Spring web framework <br/>
+[Spring](https://spring.io/) web framework <br/>
 [Spring WebFlux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html) Reactive REST Services <br/>
 [gRPC](https://grpc.io/docs/languages/kotlin/quickstart/) Kotlin gRPC <br/>
 [gRPC-Spring-Boot-Starter](https://yidongnan.github.io/grpc-spring-boot-starter/en/) gRPC Spring Boot Starter <br/>
@@ -13,7 +13,7 @@
 [Kubernetes](https://kubernetes.io/) automating deployment, scaling, and management of containerized applications <br/>
 [Docker](https://www.docker.com/) and docker-compose <br/>
 [Helm](https://helm.sh/) The package manager for Kubernetes <br/>
-[Flywaydb](https://flywaydb.org/) for migrations<br/>
+[Flywaydb](https://flywaydb.org/) for migrations <br/>
 
 All UI interfaces will be available on ports:
 

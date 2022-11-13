@@ -17,7 +17,7 @@ import net.devh.boot.grpc.server.service.GrpcService
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
-import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Page
 import java.math.BigDecimal
 import java.util.*
 import javax.validation.ConstraintViolationException
@@ -106,7 +106,7 @@ class BankAccountGrpcService(
     }
 
     override suspend fun getAllByBalanceWithPagination(request: GetAllByBalanceWithPaginationRequest): GetAllByBalanceWithPaginationResponse =
-        withContext(tracer.asContextElement()) {
+        withContext(tracer.asContextElement() ) {
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalanceWithPagination")
 
@@ -136,7 +136,7 @@ class BankAccountGrpcService(
     }
 }
 
-fun PageImpl<BankAccount>.toGetAllByBalanceWithPaginationResponse(): GetAllByBalanceWithPaginationResponse {
+fun Page<BankAccount>.toGetAllByBalanceWithPaginationResponse(): GetAllByBalanceWithPaginationResponse {
     return GetAllByBalanceWithPaginationResponse
         .newBuilder()
         .setIsFirst(this.isFirst)

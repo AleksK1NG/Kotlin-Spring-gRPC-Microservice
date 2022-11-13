@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
-import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -86,7 +86,7 @@ class BankAccountServiceImpl(
         }
     }
 
-    override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): PageImpl<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
+    override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): Page<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
         val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.findByBalanceAmount")
 
         try {
