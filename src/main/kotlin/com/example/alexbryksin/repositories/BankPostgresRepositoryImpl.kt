@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
 import org.springframework.cloud.sleuth.instrument.kotlin.asContextElement
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
@@ -28,11 +29,7 @@ class BankPostgresRepositoryImpl(
     private val tracer: Tracer,
 ) : BankPostgresRepository {
 
-    override suspend fun findByBalanceAmount(
-        min: BigDecimal,
-        max: BigDecimal,
-        pageable: Pageable
-    ): PageImpl<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
+    override suspend fun findByBalanceAmount(min: BigDecimal, max: BigDecimal, pageable: Pageable): Page<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
         val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankPostgresRepository.findByBalanceAmount")
         val query = Query.query(Criteria.where(BALANCE).between(min, max))
 
@@ -53,8 +50,8 @@ class BankPostgresRepositoryImpl(
             }
 
             PageImpl(accountsList.await(), pageable, totalCount.await()["total"] as Long)
-                .also { span.tag("PageImpl", it.toString()) }
-                .also { log.debug("PageImpl $it") }
+                .also { span.tag("pagination", it.toString()) }
+                .also { log.debug("pagination: $it") }
         } finally {
             span.end()
         }
