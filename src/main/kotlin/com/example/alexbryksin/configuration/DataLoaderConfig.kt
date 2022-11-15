@@ -49,9 +49,10 @@ class DataLoaderConfig(
                     return@async null
                 }
             }
-        }.map { it.await() }.forEach { log.info("created bank account: $it") }
-
-        log.info("Mock data successfully inserted")
+        }
+            .map { it.await() }
+            .forEach { log.info("created bank account: $it") }
+            .also { log.info("Mock data successfully inserted") }
     }
 
     companion object {

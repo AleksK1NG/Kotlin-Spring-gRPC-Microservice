@@ -9,5 +9,7 @@ import java.math.BigDecimal
 
 @Repository
 interface BankPostgresRepository {
+
     suspend fun findByBalanceAmount(min: BigDecimal, max: BigDecimal, pageable: Pageable): Page<BankAccount>
+
 }
