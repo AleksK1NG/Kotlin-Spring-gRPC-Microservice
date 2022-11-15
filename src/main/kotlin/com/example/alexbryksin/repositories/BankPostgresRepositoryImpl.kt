@@ -32,7 +32,7 @@ class BankPostgresRepositoryImpl(
 
     override suspend fun findByBalanceAmount(min: BigDecimal, max: BigDecimal, pageable: Pageable): Page<BankAccount> =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankPostgresRepository.findByBalanceAmount")
+            val span = tracer.startScopedSpan(GET_ALL_BY_BALANCE_AMOUNT)
             val query = Query.query(Criteria.where(BALANCE).between(min, max))
 
             runWithTracing(span) {
@@ -59,5 +59,6 @@ class BankPostgresRepositoryImpl(
 
     companion object {
         private val log = LoggerFactory.getLogger(BankPostgresRepositoryImpl::class.java)
+        private const val GET_ALL_BY_BALANCE_AMOUNT = "BankPostgresRepository.findByBalanceAmount"
     }
 }

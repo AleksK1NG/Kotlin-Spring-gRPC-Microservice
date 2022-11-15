@@ -26,7 +26,7 @@ class BankAccountServiceImpl(
     @Transactional
     override suspend fun createBankAccount(@Valid bankAccount: BankAccount): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankAccountService.createBankAccount")
+            val span = tracer.startScopedSpan(CREATE_BANK_ACCOUNT)
 
             runWithTracing(span) {
                 bankRepository.save(bankAccount).also { span.tag("saved account", it.toString()) }
@@ -36,7 +36,7 @@ class BankAccountServiceImpl(
     @Transactional(readOnly = true)
     override suspend fun getBankAccountById(id: UUID): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankAccountService.getBankAccountById")
+            val span = tracer.startScopedSpan(GET_BANK_ACCOUNT_BY_ID)
 
             runWithTracing(span) {
                 bankRepository.findById(id).also { span.tag("bank account", it.toString()) }
@@ -47,7 +47,7 @@ class BankAccountServiceImpl(
     @Transactional
     override suspend fun depositAmount(id: UUID, amount: BigDecimal): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankAccountService.depositAmount")
+            val span = tracer.startScopedSpan(DEPOSIT_AMOUNT)
 
             runWithTracing(span) {
                 bankRepository.findById(id)
@@ -60,7 +60,7 @@ class BankAccountServiceImpl(
     @Transactional
     override suspend fun withdrawAmount(id: UUID, amount: BigDecimal): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankAccountService.withdrawAmount")
+            val span = tracer.startScopedSpan(WITHDRAW_AMOUNT)
 
             runWithTracing(span) {
                 bankRepository.findById(id)
@@ -72,7 +72,7 @@ class BankAccountServiceImpl(
 
     @Transactional(readOnly = true)
     override fun findAllByBalanceBetween(requestDto: FindByBalanceRequestDto): Flow<BankAccount> {
-        val span = tracer.startScopedSpan("BankAccountService.findAllByBalanceBetween")
+        val span = tracer.startScopedSpan(GET_ALL_BY_BALANCE)
 
         runWithTracing(span) {
             return bankRepository.findAllByBalanceBetween(
@@ -86,11 +86,21 @@ class BankAccountServiceImpl(
     @Transactional(readOnly = true)
     override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): Page<BankAccount> =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.startScopedSpan("BankAccountService.findByBalanceAmount")
+            val span = tracer.startScopedSpan(GET_ALL_BY_BALANCE_WITH_PAGINATION)
 
             runWithTracing(span) {
                 bankRepository.findByBalanceAmount(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
                     .also { span.tag("pagination", it.toString()) }
             }
         }
+
+
+    companion object {
+        private const val CREATE_BANK_ACCOUNT = "BankAccountService.createBankAccount"
+        private const val GET_BANK_ACCOUNT_BY_ID = "BankAccountService.getBankAccountById"
+        private const val DEPOSIT_AMOUNT = "BankAccountService.depositAmount"
+        private const val WITHDRAW_AMOUNT = "BankAccountService.withdrawAmount"
+        private const val GET_ALL_BY_BALANCE = "BankAccountService.findAllByBalanceBetween"
+        private const val GET_ALL_BY_BALANCE_WITH_PAGINATION = "BankAccountService.findByBalanceAmount"
+    }
 }
