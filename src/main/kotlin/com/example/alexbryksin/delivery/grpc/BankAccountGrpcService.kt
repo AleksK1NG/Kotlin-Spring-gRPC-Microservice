@@ -38,7 +38,7 @@ class BankAccountGrpcService(
     override suspend fun createBankAccount(request: CreateBankAccountRequest): CreateBankAccountResponse =
         withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
-                val span = tracer.startScopedSpan("BankAccountGrpcService.createBankAccount")
+                val span = tracer.startScopedSpan(CREATE_BANK_ACCOUNT)
 
                 runWithTracing(span) {
                     bankAccountService.createBankAccount(validate(BankAccount.of(request)))
@@ -53,7 +53,7 @@ class BankAccountGrpcService(
     override suspend fun getBankAccountById(request: GetBankAccountByIdRequest): GetBankAccountByIdResponse =
         withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
-                val span = tracer.startScopedSpan("BankAccountGrpcService.getBankAccountById")
+                val span = tracer.startScopedSpan(GET_BANK_ACCOUNT_BY_ID)
 
                 runWithTracing(span) {
                     bankAccountService.getBankAccountById(UUID.fromString(request.id))
@@ -66,7 +66,7 @@ class BankAccountGrpcService(
     override suspend fun depositBalance(request: DepositBalanceRequest): DepositBalanceResponse =
         withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
-                val span = tracer.startScopedSpan("BankAccountGrpcService.depositBalance")
+                val span = tracer.startScopedSpan(DEPOSIT_BALANCE)
 
                 runWithTracing(span) {
                     bankAccountService.depositAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
@@ -79,7 +79,7 @@ class BankAccountGrpcService(
     override suspend fun withdrawBalance(request: WithdrawBalanceRequest): WithdrawBalanceResponse =
         withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
-                val span = tracer.startScopedSpan("BankAccountGrpcService.withdrawBalance")
+                val span = tracer.startScopedSpan(WITHDRAW_BALANCE)
 
                 runWithTracing(span) {
                     bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
@@ -90,7 +90,7 @@ class BankAccountGrpcService(
         }
 
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
-        runWithTracing(tracer, "BankAccountGrpcService.getAllByBalance") {
+        runWithTracing(tracer, GET_ALL_BY_BALANCE) {
             return bankAccountService.findAllByBalanceBetween(validate(FindByBalanceRequestDto.of(request)))
                 .map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
                 .flowOn(Dispatchers.IO + tracer.asContextElement())
@@ -100,7 +100,7 @@ class BankAccountGrpcService(
     override suspend fun getAllByBalanceWithPagination(request: GetAllByBalanceWithPaginationRequest): GetAllByBalanceWithPaginationResponse =
         withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
-                val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalanceWithPagination")
+                val span = tracer.startScopedSpan(GET_ALL_BY_BALANCE_WITH_PAGINATION)
 
                 runWithTracing(span) {
                     bankAccountService.findByBalanceAmount(validate(FindByBalanceRequestDto.of(request)))
@@ -124,6 +124,13 @@ class BankAccountGrpcService(
     companion object {
         private val log = LoggerFactory.getLogger(BankAccountGrpcService::class.java)
         private const val timeOutMillis = 5000L
+
+        private const val CREATE_BANK_ACCOUNT = "BankAccountGrpcService.createBankAccount"
+        private const val GET_BANK_ACCOUNT_BY_ID = "BankAccountGrpcService.getBankAccountById"
+        private const val DEPOSIT_BALANCE = "BankAccountGrpcService.depositBalance"
+        private const val WITHDRAW_BALANCE = "BankAccountGrpcService.withdrawBalance"
+        private const val GET_ALL_BY_BALANCE = "BankAccountGrpcService.getAllByBalance"
+        private const val GET_ALL_BY_BALANCE_WITH_PAGINATION = "BankAccountGrpcService.getAllByBalanceWithPagination"
     }
 }
 
