@@ -10,7 +10,9 @@ import com.example.alexbryksin.services.BankAccountService
 import com.example.alexbryksin.utils.runWithTracing
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -93,6 +95,7 @@ class BankAccountGrpcService(
         runWithTracing(span) {
             return bankAccountService.findAllByBalanceBetween(validate(FindByBalanceRequestDto.of(request)))
                 .map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
+                .flowOn(Dispatchers.IO + tracer.asContextElement())
         }
     }
 
