@@ -7,6 +7,7 @@ import com.example.alexbryksin.dto.FindByBalanceRequestDto
 import com.example.alexbryksin.dto.of
 import com.example.alexbryksin.interceptors.LogGrpcInterceptor
 import com.example.alexbryksin.services.BankAccountService
+import com.example.alexbryksin.utils.runWithTracing
 import com.example.grpc.bank.service.BankAccount.*
 import com.example.grpc.bank.service.BankAccountServiceGrpcKt
 import kotlinx.coroutines.flow.Flow
@@ -37,14 +38,12 @@ class BankAccountGrpcService(
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.createBankAccount")
 
-                try {
+                runWithTracing(span) {
                     bankAccountService.createBankAccount(validate(BankAccount.of(request)))
                         .let { CreateBankAccountResponse.newBuilder().setBankAccount(it.toProto()).build() }
                         .also { it ->
                             log.info("created bank account: $it").also { span.tag("account", it.toString()) }
                         }
-                } finally {
-                    span.end()
                 }
             }
         }
@@ -54,12 +53,10 @@ class BankAccountGrpcService(
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.getBankAccountById")
 
-                try {
+                runWithTracing(span) {
                     bankAccountService.getBankAccountById(UUID.fromString(request.id))
                         .let { GetBankAccountByIdResponse.newBuilder().setBankAccount(it.toProto()).build() }
                         .also { it -> log.info("response: $it").also { span.tag("response", it.toString()) } }
-                } finally {
-                    span.end()
                 }
             }
         }
@@ -69,12 +66,10 @@ class BankAccountGrpcService(
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.depositBalance")
 
-                try {
+                runWithTracing(span) {
                     bankAccountService.depositAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
                         .let { DepositBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
                         .also { it -> log.info("response: $it").also { span.tag("response", it.toString()) } }
-                } finally {
-                    span.end()
                 }
             }
         }
@@ -84,12 +79,10 @@ class BankAccountGrpcService(
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.withdrawBalance")
 
-                try {
+                runWithTracing(span) {
                     bankAccountService.withdrawAmount(UUID.fromString(request.id), BigDecimal.valueOf(request.balance))
                         .let { WithdrawBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
                         .also { it -> log.info("response: $it").also { span.tag("response", it.toString()) } }
-                } finally {
-                    span.end()
                 }
             }
         }
@@ -97,24 +90,21 @@ class BankAccountGrpcService(
     override fun getAllByBalance(request: GetAllByBalanceRequest): Flow<GetAllByBalanceResponse> {
         val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalance")
 
-        try {
+        runWithTracing(span) {
             return bankAccountService.findAllByBalanceBetween(validate(FindByBalanceRequestDto.of(request)))
                 .map { GetAllByBalanceResponse.newBuilder().setBankAccount(it.toProto()).build() }
-        } finally {
-            span.end()
         }
     }
 
     override suspend fun getAllByBalanceWithPagination(request: GetAllByBalanceWithPaginationRequest): GetAllByBalanceWithPaginationResponse =
-        withContext(tracer.asContextElement() ) {
+        withContext(tracer.asContextElement()) {
             withTimeout(timeOutMillis) {
                 val span = tracer.startScopedSpan("BankAccountGrpcService.getAllByBalanceWithPagination")
 
-                try {
-                    bankAccountService.findByBalanceAmount(validate(FindByBalanceRequestDto.of(request))).toGetAllByBalanceWithPaginationResponse()
+                runWithTracing(span) {
+                    bankAccountService.findByBalanceAmount(validate(FindByBalanceRequestDto.of(request)))
+                        .toGetAllByBalanceWithPaginationResponse()
                         .also { log.info("response: $it") }.also { span.tag("response", it.toString()) }
-                } finally {
-                    span.end()
                 }
             }
 
