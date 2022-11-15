@@ -4,6 +4,7 @@ import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.dto.FindByBalanceRequestDto
 import com.example.alexbryksin.exceptions.BankAccountNotFoundException
 import com.example.alexbryksin.repositories.BankRepository
+import com.example.alexbryksin.utils.runWithTracing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -25,75 +26,71 @@ class BankAccountServiceImpl(
     @Transactional
     override suspend fun createBankAccount(@Valid bankAccount: BankAccount): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.createBankAccount")
+            val span = tracer.startScopedSpan("BankAccountService.createBankAccount")
 
-            try {
+            runWithTracing(span) {
                 bankRepository.save(bankAccount).also { span.tag("saved account", it.toString()) }
-            } finally {
-                span.end()
             }
         }
 
+    @Transactional(readOnly = true)
     override suspend fun getBankAccountById(id: UUID): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.getBankAccountById")
+            val span = tracer.startScopedSpan("BankAccountService.getBankAccountById")
 
-            try {
+            runWithTracing(span) {
                 bankRepository.findById(id).also { span.tag("bank account", it.toString()) }
                     ?: throw BankAccountNotFoundException(id.toString())
-            } finally {
-                span.end()
             }
         }
 
     @Transactional
     override suspend fun depositAmount(id: UUID, amount: BigDecimal): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.depositAmount")
+            val span = tracer.startScopedSpan("BankAccountService.depositAmount")
 
-            try {
+            runWithTracing(span) {
                 bankRepository.findById(id)
                     ?.let { bankRepository.save(it.depositAmount(amount)) }
                     .also { span.tag("bank account", it.toString()) }
                     ?: throw BankAccountNotFoundException(id.toString())
-            } finally {
-                span.end()
             }
         }
 
     @Transactional
     override suspend fun withdrawAmount(id: UUID, amount: BigDecimal): BankAccount =
         withContext(Dispatchers.IO + tracer.asContextElement()) {
-            val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.withdrawAmount")
+            val span = tracer.startScopedSpan("BankAccountService.withdrawAmount")
 
-            try {
+            runWithTracing(span) {
                 bankRepository.findById(id)
                     ?.let { bankRepository.save(it.withdrawAmount(amount)) }
                     .also { span.tag("bank account", it.toString()) }
                     ?: throw BankAccountNotFoundException(id.toString())
-            } finally {
-                span.end()
             }
         }
 
+    @Transactional(readOnly = true)
     override fun findAllByBalanceBetween(requestDto: FindByBalanceRequestDto): Flow<BankAccount> {
-        val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.findAllByBalanceBetween")
+        val span = tracer.startScopedSpan("BankAccountService.findAllByBalanceBetween")
 
-        try {
-            return bankRepository.findAllByBalanceBetween(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
-        } finally {
-            span.end()
+        runWithTracing(span) {
+            return bankRepository.findAllByBalanceBetween(
+                requestDto.minBalance,
+                requestDto.maxBalance,
+                requestDto.pageable
+            )
         }
     }
 
-    override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): Page<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
-        val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankAccountService.findByBalanceAmount")
+    @Transactional(readOnly = true)
+    override suspend fun findByBalanceAmount(requestDto: FindByBalanceRequestDto): Page<BankAccount> =
+        withContext(Dispatchers.IO + tracer.asContextElement()) {
+            val span = tracer.startScopedSpan("BankAccountService.findByBalanceAmount")
 
-        try {
-            bankRepository.findByBalanceAmount(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
-                .also { span.tag("pagination", it.toString()) }
-        } finally {
-            span.end()
+            runWithTracing(span) {
+                bankRepository.findByBalanceAmount(requestDto.minBalance, requestDto.maxBalance, requestDto.pageable)
+                    .also { span.tag("pagination", it.toString()) }
+            }
         }
-    }
 }

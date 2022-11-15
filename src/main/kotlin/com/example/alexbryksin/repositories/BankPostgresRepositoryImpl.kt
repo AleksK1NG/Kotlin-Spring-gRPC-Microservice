@@ -2,6 +2,7 @@ package com.example.alexbryksin.repositories
 
 import com.example.alexbryksin.domain.BankAccount
 import com.example.alexbryksin.domain.BankAccount.Companion.BALANCE
+import com.example.alexbryksin.utils.runWithTracing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.toList
@@ -29,33 +30,32 @@ class BankPostgresRepositoryImpl(
     private val tracer: Tracer,
 ) : BankPostgresRepository {
 
-    override suspend fun findByBalanceAmount(min: BigDecimal, max: BigDecimal, pageable: Pageable): Page<BankAccount> = withContext(Dispatchers.IO + tracer.asContextElement()) {
-        val span = tracer.nextSpan(tracer.currentSpan()).start().name("BankPostgresRepository.findByBalanceAmount")
-        val query = Query.query(Criteria.where(BALANCE).between(min, max))
+    override suspend fun findByBalanceAmount(min: BigDecimal, max: BigDecimal, pageable: Pageable): Page<BankAccount> =
+        withContext(Dispatchers.IO + tracer.asContextElement()) {
+            val span = tracer.startScopedSpan("BankPostgresRepository.findByBalanceAmount")
+            val query = Query.query(Criteria.where(BALANCE).between(min, max))
 
-        try {
-            val accountsList = async {
-                template.select(query.with(pageable), BankAccount::class.java)
-                    .asFlow()
-                    .toList()
+            runWithTracing(span) {
+                val accountsList = async {
+                    template.select(query.with(pageable), BankAccount::class.java)
+                        .asFlow()
+                        .toList()
+                }
+
+                val totalCount = async {
+                    databaseClient.sql("SELECT count(bank_account_id) as total FROM microservices.bank_accounts WHERE balance BETWEEN :min AND :max")
+                        .bind("min", min)
+                        .bind("max", max)
+                        .fetch()
+                        .one()
+                        .awaitFirst()
+                }
+
+                PageImpl(accountsList.await(), pageable, totalCount.await()["total"] as Long)
+                    .also { span.tag("pagination", it.toString()) }
+                    .also { log.debug("pagination: $it") }
             }
-
-            val totalCount = async {
-                databaseClient.sql("SELECT count(bank_account_id) as total FROM microservices.bank_accounts WHERE balance BETWEEN :min AND :max")
-                    .bind("min", min)
-                    .bind("max", max)
-                    .fetch()
-                    .one()
-                    .awaitFirst()
-            }
-
-            PageImpl(accountsList.await(), pageable, totalCount.await()["total"] as Long)
-                .also { span.tag("pagination", it.toString()) }
-                .also { log.debug("pagination: $it") }
-        } finally {
-            span.end()
         }
-    }
 
     companion object {
         private val log = LoggerFactory.getLogger(BankPostgresRepositoryImpl::class.java)
